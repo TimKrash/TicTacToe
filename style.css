@@ -3,4 +3,45 @@
   padding: 0;
 }
 
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Bungee Spice", cursive;
+  width: 100vw;
+  height: 100vh;
+}
+body .board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 500px;
+  height: 500px;
+}
+body .board .square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 80px;
+  border: 1px solid black;
+}
+body .board .square .x {
+  display: none;
+}
+body .board .square .o {
+  display: none;
+}
+body .board .square:nth-child(-n+3) {
+  border-top: none;
+}
+body .board .square:nth-child(3n+1) {
+  border-left: none;
+}
+body .board .square:nth-child(3n+3) {
+  border-right: none;
+}
+body .board .square:nth-last-child(-n+3) {
+  border-bottom: none;
+}
+
 /*# sourceMappingURL=style.css.map */
