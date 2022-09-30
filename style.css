@@ -11,8 +11,64 @@ body {
   width: 100vw;
   height: 100vh;
 }
+body .start-container form {
+  display: flex;
+  justify-content: space-around;
+  gap: 100px;
+  align-items: center;
+}
+body .start-container form .middle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+body .start-container form .middle .text {
+  margin-top: auto;
+}
+body .start-container form .middle .play {
+  all: unset;
+  margin-top: auto;
+  font-size: 35px;
+  cursor: pointer;
+}
+body .start-container form .player {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #f5d58a;
+  border-radius: 10px;
+  border: 1px solid black;
+  width: 200px;
+  height: 200px;
+  padding: 20px;
+}
+body .start-container form .player .form-entry {
+  text-align: center;
+}
+body .start-container form .player .form-entry input[type=text] {
+  border: none;
+  padding: 5px;
+  margin: 5px;
+}
+body .start-container form .player .form-entry input[type=button] {
+  border: 0.1px solid #FFFFFF;
+  background-color: white;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+body .start-container form .player .form-entry input[type=button]:hover {
+  background-color: #f2f2f2;
+}
+body .start-container form .player .form-entry input[type=button].toggled {
+  background-color: #e6e6e6;
+}
 body .board {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   width: 500px;
@@ -42,6 +98,21 @@ body .board .square:nth-child(3n+3) {
 }
 body .board .square:nth-last-child(-n+3) {
   border-bottom: none;
+}
+body .game-over {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+body .game-over .winner {
+  font-size: 35px;
+}
+body .game-over button {
+  all: unset;
+  cursor: pointer;
+  font-size: 35px;
 }
 
 /*# sourceMappingURL=style.css.map */

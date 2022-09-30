@@ -1,6 +1,7 @@
-const player = (marker) => {
-
+const player = (name, marker, type) => {
   const getMarker = () => marker;
+  const getType = () => type;
+  const getName = () => name;
 
   const mark = (row, col) => {
     if (gameController.isValidMove(row, col)) {
@@ -8,24 +9,28 @@ const player = (marker) => {
     }
   }
 
-  return { getMarker, mark }
+  return { getMarker, mark, getType, getName }
 }
 
 const gameController = (() => {
-  let currKey = true;
-  let markerMap = {true: 'x', false: 'o'};
-  let playerOneMarker = markerMap[currKey];
-  let playerTwoMarker = markerMap[!currKey];
+  let players = [];
+  let currTurn;
 
-  let playerOne = player(playerOneMarker);
-  let playerTwo = player(playerTwoMarker);
+  const createPlayer = (name, marker, type) => {
+    players.push(player(name, marker, type));
+    currTurn = players[0];
+  }
+  const getPlayers = () => players;
 
-  let playerMap = {};
-  playerMap[playerOneMarker] = playerOne;
-  playerMap[playerTwoMarker] = playerTwo;
+  const switchTurn = () => {
+    prevTurn = currTurn;
 
-  const setUserMarker = (marker) => currKey = marker;
-  const switchCurrMarker = () => currKey = !currKey;
+    if (currTurn === players[0]) {
+      currTurn = players[1];
+    } else {
+      currTurn = players[0];
+    }
+  }
 
   const checkDiag = (diagArr, marker) => {
     let board = gameBoard.getBoard();
@@ -64,11 +69,10 @@ const gameController = (() => {
   // End game logic
   const isGameOver = (row, col) => {
     let board = gameBoard.getBoard();
-    let prevTurnUser = playerMap[markerMap[!currKey]];
+    let prevTurnUser = prevTurn;
     let prevTurnMarker = prevTurnUser.getMarker();
 
     if (board[row].every(x => x === prevTurnMarker)) {
-      console.log("Row wins!");
       return true;
     }
 
@@ -76,14 +80,12 @@ const gameController = (() => {
       if (board[i][col] == prevTurnMarker && i != board.length - 1) {
         continue
       } else if (board[i][col] == prevTurnMarker) {
-        console.log("Col wins!");
         return true;
       }
       break;
     }
 
     if (onDiag(row, col, prevTurnMarker)) {
-      console.log("Diag wins!");
       return true;
     }
 
@@ -94,43 +96,81 @@ const gameController = (() => {
     if (gameBoard.getSquare(row, col) == "") {
 
       // Switch user turn now
-      switchCurrMarker();
+      switchTurn();
       return true;
     }
     return false;
   };
 
-  const getCurrTurn = () => playerMap[markerMap[currKey]];
+  const getCurrTurn = () => currTurn;
 
   return {
-    isValidMove, setUserMarker, getCurrTurn, isGameOver
+    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers
   };
 
 })()
 
 const displayController = (() => {
-  const handleUserClick = (e) => {
+  let playerOne;
+  let playerTwo;
+  let startContainer = document.querySelector(".start-container");
+  let board = document.querySelector(".board");
+
+  const handleStartPlay = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const formProps = Object.fromEntries(formData);
+
+    // todo handle x vs o
+    gameController.createPlayer(formProps.p1name, "x", formProps.type1);
+    gameController.createPlayer(formProps.p2name, "o", formProps.type2);
+
+    [playerOne, playerTwo] = gameController.getPlayers();
+
+    startContainer.style.display = "none";
+    board.style.display = "grid";
+  }
+
+  const handleUserMove = (e) => {
     let target = e.target;
     let rowColArr = target.id.split("-");
     let row = parseInt(rowColArr[0]);
     let col = parseInt(rowColArr[1]);
 
     let currUser = gameController.getCurrTurn();
+    if (currUser.getType() !== "Human") {
+      return;
+    }
+
     let userMarker = currUser.getMarker();
     currUser.mark(row, col);
     if (gameBoard.getSquare(row, col) == userMarker) {
       target.textContent = userMarker;
-    }
 
-    if (gameController.isGameOver(row, col)) {
-      console.log("Game over! Winner is " + userMarker);
+      if (gameController.isGameOver(row, col)) {
+        let gameOver = document.querySelector(".game-over");
+        let winner = gameOver.querySelector(".winner");
+        let playAgain = gameOver.querySelector("button");
+        playAgain.addEventListener('click', (e) => {
+          window.location.reload();
+        });
+
+        board.style.display = "none";
+
+        winner.textContent = "Game Over! " + currUser.getName() + " won!";
+        gameOver.style.display = "flex";
+      }
     }
   }
 
   let squares = document.querySelectorAll(".square");
   squares.forEach((square) => {
-    square.addEventListener('click', handleUserClick);
+    square.addEventListener('click', handleUserMove);
   });
+
+  let form = document.querySelector("form");
+  form.addEventListener('submit', handleStartPlay);
 })()
 
 const gameBoard = (() => {

@@ -12,6 +12,39 @@
 </head>
 <body>
 
+  <div class="start-container"> 
+    <form action="#" onsubmit="return false;">
+      <div id="1" class="player">
+          <div class="form-entry">
+            <label for="p1name">Name:</label>
+            <input type="text" id="p1name" name="p1name" required>
+          </div>
+          <div class="form-entry">
+            <input type="radio" id="human" name="type1" value="Human" checked>
+            <label for="human">Human</label>
+            <input type="radio" id="computer" name="type1" value="Computer">
+            <label for="computer">Computer</label>
+          </div>
+      </div>
+      <div class="middle">
+        <div class="text">VS.</div>
+        <input type="submit" value="PLAY" class="play">
+      </div>
+      <div id="2" class="player">
+          <div class="form-entry">
+            <label for="p2name">Name:</label>
+            <input type="text" id="p2name" name="p2name" required>
+          </div>
+          <div class="form-entry">
+            <input type="radio" id="human2" name="type2" value="Human" checked>
+            <label for="human2">Human</label>
+            <input type="radio" id="computer2" name="type2" value="Computer">
+            <label for="computer2">Computer</label>
+          </div>
+      </div>
+    </form>
+  </div>
+
   <div class="board">
     <div id="0-0" class="square">
     </div>
@@ -31,6 +64,11 @@
     </div>
     <div id="2-2" class="square">
     </div>
+  </div>
+
+  <div class="game-over">
+    <div class="winner"></div>
+    <button>Play Again?</button>
   </div>
 
   <script type="text/javascript" src="./script.js"></script>
