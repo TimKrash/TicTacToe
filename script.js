@@ -126,7 +126,7 @@ const gameController = (() => {
   }
 
   return {
-    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers, switchTurn
+    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers, switchTurn, sleep
   };
 
 })()
@@ -137,13 +137,14 @@ const displayController = (() => {
   let startContainer = document.querySelector(".start-container");
   let board = document.querySelector(".board");
 
-  const handleNewMove = (currUser, target, row, col) => {
+  const handleNewMove = async (currUser, target, row, col) => {
     let userMarker = currUser.getMarker();
     currUser.mark(row, col);
     if (gameBoard.getSquare(row, col) == userMarker) {
       target.textContent = userMarker;
 
       if (gameController.isGameOver(row, col)) {
+        await gameController.sleep(200);
         let gameOver = document.querySelector(".game-over");
         let winner = gameOver.querySelector(".winner");
         let playAgain = gameOver.querySelector("button");
@@ -155,8 +156,9 @@ const displayController = (() => {
 
         winner.textContent = "Game Over! " + currUser.getName() + " won!";
         gameOver.style.display = "flex";
+      } else {
+        gameController.switchTurn();
       }
-      gameController.switchTurn();
     }
   }
 
