@@ -126,7 +126,7 @@ const gameController = (() => {
   }
 
   return {
-    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers, switchTurn, sleep
+    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers, switchTurn, sleep, handleComputerMove
   };
 
 })()
@@ -143,21 +143,28 @@ const displayController = (() => {
     if (gameBoard.getSquare(row, col) == userMarker) {
       target.textContent = userMarker;
 
+      let gameOver = document.querySelector(".game-over");
+      let winner = gameOver.querySelector(".winner");
+      let playAgain = gameOver.querySelector("button");
+      playAgain.addEventListener('click', (e) => {
+        window.location.reload();
+      });
+
       if (gameController.isGameOver(row, col)) {
-        await gameController.sleep(200);
-        let gameOver = document.querySelector(".game-over");
-        let winner = gameOver.querySelector(".winner");
-        let playAgain = gameOver.querySelector("button");
-        playAgain.addEventListener('click', (e) => {
-          window.location.reload();
-        });
+        await gameController.sleep(500);
 
         board.style.display = "none";
 
         winner.textContent = "Game Over! " + currUser.getName() + " won!";
         gameOver.style.display = "flex";
-      } else {
+      } else if (!gameBoard.isFull()) {
         gameController.switchTurn();
+      } else {
+        await gameController.sleep(500);
+        board.style.display = "none";
+
+        winner.textContent = "Game Over! It's a draw!";
+        gameOver.style.display = "flex";
       }
     }
   }
@@ -181,6 +188,10 @@ const displayController = (() => {
 
     startContainer.style.display = "none";
     board.style.display = "grid";
+
+    if (playerOne.getType() === "Computer") {
+      gameController.handleComputerMove(playerOne);
+    }
   }
 
   const handleUserMove = (e) => {
@@ -210,14 +221,17 @@ const displayController = (() => {
 
 const gameBoard = (() => {
   let board = [["","",""], ["","",""], ["","",""]]
+  let emptySquares = 9;
 
   const getBoard = () => board;
   const getSquare = (row, col) => board[row][col];
   const setSquare = (row, col, marker) => {
     board[row][col] = marker;
+    emptySquares -= 1;
   }
+  const isFull = () => emptySquares == 0;
 
   return {
-    getSquare, setSquare, getBoard
+    getSquare, setSquare, getBoard, isFull
   }
 })()
