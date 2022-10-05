@@ -73,25 +73,32 @@ const gameController = (() => {
   }
 
   // End game logic
-  const isGameOver = (row, col) => {
-    let board = gameBoard.getBoard();
+  const isGameOver = (board) => {
     let currTurnMarker = currTurn.getMarker();
 
-    if (board[row].every(x => x === currTurnMarker)) {
-      return true;
-    }
-
     for (let i = 0; i < board.length; i++) {
-      if (board[i][col] == currTurnMarker && i != board.length - 1) {
-        continue
-      } else if (board[i][col] == currTurnMarker) {
-        return true;
-      }
-      break;
+      if (board[i][0] == currTurnMarker && board[i][1] == currTurnMarker
+        && board[i][2] == currTurnMarker) {
+          return true;
+        }
     }
 
-    if (onDiag(row, col, currTurnMarker)) {
-      return true;
+    for (let i = 0; i < board[0].length; i++) {
+      if (board[0][i] == currTurnMarker && board[1][i] == currTurnMarker
+        && board[2][i] == currTurnMarker) {
+          return true;
+        }
+    }
+
+    if (board[0][0] == currTurnMarker && board[1][1] == currTurnMarker
+      && board[2][2] == currTurnMarker) {
+        return true;
+    }
+
+
+    if (board[0][2] == currTurnMarker && board[1][1] == currTurnMarker
+      && board[2][0] == currTurnMarker) {
+        return true;
     }
 
     return false;
@@ -150,7 +157,7 @@ const displayController = (() => {
         window.location.reload();
       });
 
-      if (gameController.isGameOver(row, col)) {
+      if (gameController.isGameOver(gameBoard.getBoard())) {
         await gameController.sleep(500);
 
         board.style.display = "none";
