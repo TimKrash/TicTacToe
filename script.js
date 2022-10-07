@@ -1,244 +1,215 @@
-const player = (name, marker, type) => {
-  const getMarker = () => marker;
-  const getType = () => type;
-  const getName = () => name;
+class Game {
+  constructor(p1, p2) {
+    this.p1 = p1;
+    this.p2 = p2;
+    this.board = [["", "", ""], ["", "", ""], ["", "", ""]];
+    this.currentTurn = p1;
+    this.winner = null;
+  }
 
-  const mark = (row, col) => {
-    if (gameController.isValidMove(row, col)) {
-      gameBoard.setSquare(row, col, marker);
+  markSquare = (move, marker) => {
+    let row = move[0];
+    let col = move[1];
+    if (this.isEmptySquare(move)) {
+      this.board[row][col] = marker;
+      this.switchTurn();
     }
   }
 
-  return { getMarker, mark, getType, getName }
+  isEmptySquare = (move) => {
+    let row = move[0];
+    let col = move[1];
+    return this.board[row][col] === "";
+  }
+
+  emptySquares = () => {
+    let emptySquareList = [];
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[0].length; j++) {
+        if (this.board[i][j] === "") {
+          emptySquareList.push([i,j]);
+        }
+      }
+    }
+
+    return emptySquareList;
+  }
+
+  getCurrentTurn = () => this.currentTurn;
+
+  switchTurn = () => {
+    if (this.currentTurn === this.p1) {
+      this.currentTurn = this.p2
+    } else {
+      this.currentTurn = this.p1;
+    }
+
+    if (this.currentTurn.type === "Computer") {
+      displayController.handleAIMove();
+    }
+  }
+
+  gameOver = () => {
+    for (let i = 0; i < this.board.length; i++) {
+      if (this.board[i][0] === this.board[i][1] 
+        && this.board[i][0] === this.board[i][2]
+        && this.board[i][0] !== "") {
+          this.winner = this.board[i][0];
+          return true;
+        }
+    }
+
+    for (let i = 0; i < this.board.length; i++) {
+      if (this.board[0][i] === this.board[1][i] 
+        && this.board[0][i] === this.board[2][i]
+        && this.board[0][i] !== "") {
+          this.winner = this.board[0][i];
+          return true;
+        }
+    }
+
+    if (this.board[0][0] === this.board[1][1]
+      && this.board[0][0] === this.board[2][2]
+      && this.board[0][0] !== "") {
+        this.winner = this.board[0][0];
+        return true;
+      }
+
+    if (this.board[0][2] === this.board[1][1]
+      && this.board[0][2] === this.board[2][0]
+      && this.board[0][2] !== "") {
+        this.winner = this.board[0][2];
+        return true;
+      }
+
+    this.winner = null;
+    return false;
+  }
+
+  getWinner = () => {
+    if (this.p1.marker === this.winner) {
+      return this.p1;
+    } else if (this.p2.marker === this.winner) {
+      return this.p2;
+    } else {
+      return null;
+    }
+  }
 }
 
-const gameController = (() => {
-  let players = [];
-  let currTurn;
+class Player {
+  constructor(name, marker, type) { 
+    this.name = name;
+    this.marker = marker;
+    this.type = type;
+   }
 
-  const createPlayer = (name, marker, type) => {
-    players.push(player(name, marker, type));
-    currTurn = players[0];
-  }
-  const getPlayers = () => players;
+   move = (game, m) => {
+    game.markSquare(m, this.marker);
+   }
+}
 
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
-  const switchTurn = async () => {
-    prevTurn = currTurn;
+class DisplayController {
+  constructor() {
+    this.formElem = document.querySelector("form");
+    this.playElem = document.querySelector(".play");
+    this.squareElem = document.querySelectorAll(".square");
+    this.startContainerElem = document.querySelector(".start-container");
+    this.boardElem = document.querySelector(".board");
+    this.gameOverElem = document.querySelector(".game-over");
+    this.winnerElem = document.querySelector(".winner");
+    this.playAgainElem = document.querySelector(".play-again");
 
-    if (currTurn === players[0]) {
-      currTurn = players[1];
-    } else {
-      currTurn = players[0];
-    }
-
-    if (currTurn.getType() === "Computer") {
-      await sleep(200);
-      handleComputerMove(currTurn);
-    }
-  }
-
-  const checkDiag = (diagArr, marker) => {
-    let board = gameBoard.getBoard();
-     for (let i = 0; i < diagArr.length; i++) {
-        let elem = diagArr[i];
-        let boardVal = board[elem[0]][elem[1]];
-        if (boardVal == marker && i != diagArr.length - 1) {
-          continue;
-        } else if (boardVal == marker) {
-          return true;
-        }
-        return false;
-      }
+    this.squareElem.forEach(square => {
+      square.addEventListener('click', this.handleHumanMove);
+    })
+    this.formElem.addEventListener('submit', this.handleFormSubmit);
+    this.playAgainElem.addEventListener('click', () => window.location.reload());
   }
 
-  const onDiag = (row, col, marker) => {
-    let diagSetForward = new Set();
-    diagSetForward.add([0,0]).add([1,1]).add([2,2]);
+  isGameOver = () => {
+    if (this.game.gameOver() || this.game.emptySquares().length === 0) {
+      this.boardElem.style.display = "none";
 
-    let diagSetBackward = new Set();
-    diagSetBackward.add([0,2]).add([1,1]).add([2,0]);
-
-    let forwardDiag = Array.from(diagSetForward);
-    if (checkDiag(forwardDiag, marker)) {
-      return true;
-    }
-
-    let backwardDiag = Array.from(diagSetBackward);
-    if (checkDiag(backwardDiag, marker)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // End game logic
-  const isGameOver = (board) => {
-    let currTurnMarker = currTurn.getMarker();
-
-    for (let i = 0; i < board.length; i++) {
-      if (board[i][0] == currTurnMarker && board[i][1] == currTurnMarker
-        && board[i][2] == currTurnMarker) {
-          return true;
-        }
-    }
-
-    for (let i = 0; i < board[0].length; i++) {
-      if (board[0][i] == currTurnMarker && board[1][i] == currTurnMarker
-        && board[2][i] == currTurnMarker) {
-          return true;
-        }
-    }
-
-    if (board[0][0] == currTurnMarker && board[1][1] == currTurnMarker
-      && board[2][2] == currTurnMarker) {
-        return true;
-    }
-
-
-    if (board[0][2] == currTurnMarker && board[1][1] == currTurnMarker
-      && board[2][0] == currTurnMarker) {
-        return true;
-    }
-
-    return false;
-  }
-
-  const isValidMove = (row, col) => {
-    if (gameBoard.getSquare(row, col) == "") {
-      return true;
-    }
-    return false;
-  };
-
-  const getCurrTurn = () => currTurn;
-
-  const getRandomInt = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  const handleComputerMove = (currUser) => {
-    let row = getRandomInt(0,2);
-    let col = getRandomInt(0,2);
-
-    while (!isValidMove(row, col)) {
-      row = getRandomInt(0,2);
-      col = getRandomInt(0,2);
-    }
-
-    currUser.mark(row, col);
-    displayController.addComputerMove(currUser, row, col);
-  }
-
-  return {
-    isValidMove, getCurrTurn, isGameOver, createPlayer, getPlayers, switchTurn, sleep, handleComputerMove
-  };
-
-})()
-
-const displayController = (() => {
-  let playerOne;
-  let playerTwo;
-  let startContainer = document.querySelector(".start-container");
-  let board = document.querySelector(".board");
-
-  const handleNewMove = async (currUser, target, row, col) => {
-    let userMarker = currUser.getMarker();
-    currUser.mark(row, col);
-    if (gameBoard.getSquare(row, col) == userMarker) {
-      target.textContent = userMarker;
-
-      let gameOver = document.querySelector(".game-over");
-      let winner = gameOver.querySelector(".winner");
-      let playAgain = gameOver.querySelector("button");
-      playAgain.addEventListener('click', (e) => {
-        window.location.reload();
-      });
-
-      if (gameController.isGameOver(gameBoard.getBoard())) {
-        await gameController.sleep(500);
-
-        board.style.display = "none";
-
-        winner.textContent = "Game Over! " + currUser.getName() + " won!";
-        gameOver.style.display = "flex";
-      } else if (!gameBoard.isFull()) {
-        gameController.switchTurn();
+      let winner = this.game.getWinner();
+      if (winner) {
+        this.winnerElem.textContent = `Game over! ${winner.name} won!`
+        this.gameOverElem.style.display = "flex";
       } else {
-        await gameController.sleep(500);
-        board.style.display = "none";
-
-        winner.textContent = "Game Over! It's a draw!";
-        gameOver.style.display = "flex";
+        this.winnerElem.textContent = `Game over! It's a draw!`
+        this.gameOverElem.style.display = "flex";
       }
+      return true;
     }
+
+    return false;
   }
 
-  const addComputerMove = (currUser, row, col) => {
-    let target = document.querySelector(`div[id="${row}-${col}"]`);
-    handleNewMove(currUser, target, row, col);
-  }
-
-  const handleStartPlay = (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const formProps = Object.fromEntries(formData);
-
-    // todo handle x vs o
-    gameController.createPlayer(formProps.p1name, "x", formProps.type1);
-    gameController.createPlayer(formProps.p2name, "o", formProps.type2);
-
-    [playerOne, playerTwo] = gameController.getPlayers();
-
-    startContainer.style.display = "none";
-    board.style.display = "grid";
-
-    if (playerOne.getType() === "Computer") {
-      gameController.handleComputerMove(playerOne);
-    }
-  }
-
-  const handleUserMove = (e) => {
+  handleHumanMove = async (e) => {
     let target = e.target;
-    let rowColArr = target.id.split("-");
-    let row = parseInt(rowColArr[0]);
-    let col = parseInt(rowColArr[1]);
+    let squareId = target.id;
+    squareId = squareId.split("-");
 
-    let currUser = gameController.getCurrTurn();
-    if (currUser.getType() !== "Human") {
+    let row = parseInt(squareId[0]);
+    let col = parseInt(squareId[1]);
+    let move = [row, col];
+    let currentPlayer = this.game.getCurrentTurn();
+
+    if (currentPlayer.type === "Human" 
+    && this.game.isEmptySquare(move)) {
+      currentPlayer.move(this.game, move);
+      target.textContent = currentPlayer.marker;
+    }
+
+    await new Promise(r => setTimeout(r, 1000));
+    if (this.isGameOver()) {
+      return;
+    }
+  }
+
+  handleAIMove = async () => {
+    await new Promise(r => setTimeout(r, 1000));
+    if (this.isGameOver()) {
       return;
     }
 
-    handleNewMove(currUser, target, row, col);
+    let currentPlayer = this.game.getCurrentTurn();
+    let randomRow = this.randomIntGen(0,2);
+    let randomCol = this.randomIntGen(0,2);
+    let move = [randomRow, randomCol];
+
+    while (!this.game.isEmptySquare(move)) {
+      move = [this.randomIntGen(0,2), this.randomIntGen(0,2)];
+    }
+
+    // DOM target
+    let target = document.querySelector(`div[id="${move[0]}-${move[1]}"]`);
+    target.textContent = currentPlayer.marker;
+    currentPlayer.move(this.game, move);
   }
 
-  let squares = document.querySelectorAll(".square");
-  squares.forEach((square) => {
-    square.addEventListener('click', handleUserMove);
-  });
-
-  let form = document.querySelector("form");
-  form.addEventListener('submit', handleStartPlay);
-
-  return { addComputerMove  }
-})()
-
-const gameBoard = (() => {
-  let board = [["","",""], ["","",""], ["","",""]]
-  let emptySquares = 9;
-
-  const getBoard = () => board;
-  const getSquare = (row, col) => board[row][col];
-  const setSquare = (row, col, marker) => {
-    board[row][col] = marker;
-    emptySquares -= 1;
+  randomIntGen = (start, end) => {
+    return Math.floor(Math.random() * (end - start + 1) + start);
   }
-  const isFull = () => emptySquares == 0;
 
-  return {
-    getSquare, setSquare, getBoard, isFull
+  handleFormSubmit = (e) => {
+    let target = e.target;
+    let formData = new FormData(target);
+
+    let formProps = Object.fromEntries(formData);
+    let p1 = new Player(formProps.p1name, "x", formProps.type1);
+    let p2 = new Player(formProps.p2name, "o", formProps.type2);
+
+    this.game = new Game(p1, p2);
+
+    // Display board and hide start screen
+    this.startContainerElem.style.display = "none";
+    this.boardElem.style.display = "grid";
+
+    if (p1.type === "Computer") {
+      this.handleAIMove();
+    }
   }
-})()
+}
+
+let displayController = new DisplayController();
