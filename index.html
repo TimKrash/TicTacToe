@@ -12,18 +12,30 @@
 </head>
 <body>
 
-  <div class="start-container"> 
+  <div class="start-container">
+    <div class="title">Tic-Tac-Toe!</div>
     <form action="#" onsubmit="return false;">
       <div id="1" class="player">
+        <div class="text">Player One</div>
           <div class="form-entry">
             <label for="p1name">Name:</label>
             <input type="text" id="p1name" name="p1name" required>
           </div>
           <div class="form-entry">
-            <input type="radio" id="human" name="type1" value="Human" checked>
+            <input type="radio" id="human1" name="type1" value="Human" checked>
             <label for="human">Human</label>
-            <input type="radio" id="computer" name="type1" value="Computer">
+            <input type="radio" id="computer1" name="type1" value="Computer">
             <label for="computer">Computer</label>
+          </div>
+          <div class="form-entry">
+            <div class="difficulty-container1">
+              <select id="difficulty1" name="difficulty1">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="unbeatable">Unbeatable</option>
+              </select>
+            </div>
           </div>
       </div>
       <div class="middle">
@@ -31,6 +43,7 @@
         <input type="submit" value="PLAY" class="play">
       </div>
       <div id="2" class="player">
+        <div class="text">Player Two</div>
           <div class="form-entry">
             <label for="p2name">Name:</label>
             <input type="text" id="p2name" name="p2name" required>
@@ -40,6 +53,16 @@
             <label for="human2">Human</label>
             <input type="radio" id="computer2" name="type2" value="Computer">
             <label for="computer2">Computer</label>
+          </div>
+          <div class="form-entry">
+            <div class="difficulty-container2">
+              <select id="difficulty2" name="difficulty2">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="unbeatable">Unbeatable</option>
+              </select>
+            </div>
           </div>
       </div>
     </form>
@@ -68,7 +91,7 @@
 
   <div class="game-over">
     <div class="winner"></div>
-    <button>Play Again?</button>
+    <button class="play-again">Play Again?</button>
   </div>
 
   <script type="text/javascript" src="./script.js"></script>
