@@ -67,6 +67,15 @@ body .start-container form .player .form-entry input[type=button]:hover {
 body .start-container form .player .form-entry input[type=button].toggled {
   background-color: #e6e6e6;
 }
+body .start-container form .player .form-entry input[type=submit]:hover {
+  color: black;
+}
+body .start-container form .player .form-entry .difficulty-container1 {
+  display: none;
+}
+body .start-container form .player .form-entry .difficulty-container2 {
+  display: none;
+}
 body .board {
   display: none;
   grid-template-columns: repeat(3, 1fr);

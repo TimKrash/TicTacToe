@@ -111,9 +111,11 @@ class Player {
 }
 
 class AI extends Player {
-  constructor(name, marker, type) {
+  constructor(name, marker, type, difficulty) {
     super(name, marker, type);
+    this.difficulty = difficulty;
     this.oppMarker = (marker === "x") ? "o" : "x";
+    this.moveCounter = 0;
   }
 
   getScore = (game) => {
@@ -170,9 +172,40 @@ class AI extends Player {
     }
   }
 
-  moveBest = (game) => {
-    let res = this.minimax(game, 1, [-1, -1]);
+  move = (game) => {
+    let res = null;
+    switch(this.difficulty) {
+      case "unbeatable":
+        res = this.minimax(game, 1, [-1, -1]);
+        break;
+      case "hard":
+        if (this.moveCounter !== 0 && this.moveCounter % 4 === 0) {
+          let squaresLeft = game.emptySquares();
+          let randomMove = squaresLeft[0];
+
+          res = [randomMove, -1];
+        } else {
+          res = this.minimax(game, 1, [-1, -1]);
+        }
+        break;
+      case "medium":
+        if (this.moveCounter !== 0 && this.moveCounter % 2 === 0) {
+          let squaresLeft = game.emptySquares();
+          let randomMove = squaresLeft[0];
+
+          res = [randomMove, -1];
+        } else {
+          res = this.minimax(game, 1, [-1, -1]);
+        }
+        break;
+      case "easy":
+        let squaresLeft = game.emptySquares();
+        let randomMove = squaresLeft[Math.floor(Math.random() * squaresLeft.length)];
+
+        res = [randomMove, -1];
+    }
     game.markSquare(res[0], this.marker);
+    this.moveCounter += 1;
   }
 }
 
@@ -186,9 +219,13 @@ class DisplayController {
     this.gameOverElem = document.querySelector(".game-over");
     this.winnerElem = document.querySelector(".winner");
     this.playAgainElem = document.querySelector(".play-again");
+    this.radioSelection = document.querySelectorAll('input[type="radio"]');
 
     this.squareElem.forEach(square => {
       square.addEventListener('click', this.handleHumanMove);
+    })
+    this.radioSelection.forEach(radio => {
+      radio.addEventListener('click', this.handleDifficultyDisplay);
     })
     this.formElem.addEventListener('submit', this.handleFormSubmit);
     this.playAgainElem.addEventListener('click', () => window.location.reload());
@@ -238,6 +275,22 @@ class DisplayController {
     }
   }
 
+  handleDifficultyDisplay = (e) => {
+    let diffContainerOne = document.querySelector(".difficulty-container1");
+    let diffContainerTwo = document.querySelector(".difficulty-container2");
+
+    let target = e.target;
+    if (target.id === "human1") {
+      diffContainerOne.style.display = "none";
+    } else if (target.id === "human2") {
+      diffContainerTwo.style.display = "none";
+    } else if (target.id === "computer1") {
+      diffContainerOne.style.display = "block";
+    } else if (target.id === "computer2") {
+      diffContainerTwo.style.display = "block";
+    }
+  }
+
   handleAIMove = async (m) => {
     await new Promise(r => setTimeout(r, 1000));
     if (this.isGameOver()) {
@@ -256,11 +309,7 @@ class DisplayController {
     */
 
     // DOM target
-    currentPlayer.moveBest(this.game);
-  }
-
-  randomIntGen = (start, end) => {
-    return Math.floor(Math.random() * (end - start + 1) + start);
+    currentPlayer.move(this.game);
   }
 
   handleFormSubmit = (e) => {
@@ -268,8 +317,20 @@ class DisplayController {
     let formData = new FormData(target);
 
     let formProps = Object.fromEntries(formData);
-    let p1 = new Player(formProps.p1name, "x", formProps.type1);
-    let p2 = new AI(formProps.p2name, "o", formProps.type2);
+    let p1 = null;
+    let p2 = null;
+
+    if (formProps.type1 === "Computer") {
+      p1 = new AI(formProps.p1name, "x", formProps.type1, formProps.difficulty1);
+    } else if (formProps.type1 === "Human") {
+      p1 = new Player(formProps.p1name, "x", formProps.type1);
+    }
+
+    if (formProps.type2 === "Computer") {
+      p2 = new AI(formProps.p2name, "o", formProps.type2, formProps.difficulty2);
+    } else if (formProps.type2 === "Human") {
+      p2 = new Player(formProps.p2name, "o", formProps.type2);
+    }
 
     this.game = new Game(p1, p2);
 
