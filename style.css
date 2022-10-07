@@ -11,6 +11,11 @@ body {
   width: 100vw;
   height: 100vh;
 }
+body .start-container .title {
+  font-size: 50px;
+  text-align: center;
+  margin-bottom: 50px;
+}
 body .start-container form {
   display: flex;
   justify-content: space-around;
@@ -33,6 +38,11 @@ body .start-container form .middle .play {
   font-size: 35px;
   cursor: pointer;
 }
+body .start-container form .middle .play:hover {
+  font-size: 45px;
+  text-decoration: underline;
+  text-decoration-color: #f5d58a;
+}
 body .start-container form .player {
   display: flex;
   justify-content: center;
@@ -46,7 +56,14 @@ body .start-container form .player {
   height: 200px;
   padding: 20px;
 }
+body .start-container form .player .text {
+  font-style: italic;
+  font-size: 25px;
+  justify-self: start;
+  margin-bottom: auto;
+}
 body .start-container form .player .form-entry {
+  margin-top: auto;
   text-align: center;
 }
 body .start-container form .player .form-entry input[type=text] {
@@ -89,12 +106,16 @@ body .board .square {
   align-items: center;
   font-size: 80px;
   border: 1px solid black;
+  cursor: pointer;
 }
 body .board .square .x {
   display: none;
 }
 body .board .square .o {
   display: none;
+}
+body .board .square:hover {
+  background-color: #e8f4f8;
 }
 body .board .square:nth-child(-n+3) {
   border-top: none;

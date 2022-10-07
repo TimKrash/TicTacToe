@@ -298,17 +298,6 @@ class DisplayController {
     }
 
     let currentPlayer = this.game.getCurrentTurn();
-    /*
-    let randomRow = this.randomIntGen(0,2);
-    let randomCol = this.randomIntGen(0,2);
-    let move = [randomRow, randomCol];
-
-    while (!this.game.isEmptySquare(move)) {
-      move = [this.randomIntGen(0,2), this.randomIntGen(0,2)];
-    }
-    */
-
-    // DOM target
     currentPlayer.move(this.game);
   }
 
