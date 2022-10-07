@@ -11,6 +11,7 @@ class Game {
     let row = move[0];
     let col = move[1];
     if (this.isEmptySquare(move)) {
+      displayController.addMove(move, this.currentTurn.marker);
       this.board[row][col] = marker;
       this.switchTurn();
     }
@@ -109,6 +110,72 @@ class Player {
    }
 }
 
+class AI extends Player {
+  constructor(name, marker, type) {
+    super(name, marker, type);
+    this.oppMarker = (marker === "x") ? "o" : "x";
+  }
+
+  getScore = (game) => {
+    if (!game.getWinner()) {
+      return 0;
+    }
+
+    if (game.getWinner().marker === this.marker) {
+      return 10;
+    } else if (game.getWinner().marker === this.oppMarker) {
+      return -10;
+    }
+  }
+
+  minimax = (game, maxPlayer, lastMove) => {
+    if (game.gameOver() || game.emptySquares().length === 0) {
+      return [lastMove, this.getScore(game)];
+    }
+
+    if (maxPlayer) {
+      let maxEval = -1000;
+      let bestMove = null;
+      for (const m of game.emptySquares()) {
+        let row = m[0];
+        let col = m[1];
+
+        game.board[row][col] = this.marker;
+
+        let currEval = this.minimax(game, !maxPlayer, m);
+        game.board[row][col] = "";
+        if (currEval[1] > maxEval) {
+          maxEval = currEval[1];
+          bestMove = m;
+        }
+      }
+      return [bestMove, maxEval];
+    } else {
+      let minEval = 1000;
+      let bestMove = null;
+      for (const m of game.emptySquares()) {
+        let row = m[0];
+        let col = m[1];
+
+        game.board[row][col] = this.oppMarker;
+
+        let currEval = this.minimax(game, !maxPlayer, m);
+        game.board[row][col] = "";
+        if (currEval[1] < minEval) {
+          minEval = currEval[1];
+          bestMove = m;
+        }
+      }
+      return [bestMove, minEval];
+    }
+  }
+
+  moveBest = (game) => {
+    let res = this.minimax(game, 1, [-1, -1]);
+    game.markSquare(res[0], this.marker);
+  }
+}
+
 class DisplayController {
   constructor() {
     this.formElem = document.querySelector("form");
@@ -125,6 +192,11 @@ class DisplayController {
     })
     this.formElem.addEventListener('submit', this.handleFormSubmit);
     this.playAgainElem.addEventListener('click', () => window.location.reload());
+  }
+
+  addMove = (target, marker) => {
+    let square = document.querySelector(`div[id="${target[0]}-${target[1]}"]`);
+    square.textContent = marker;
   }
 
   isGameOver = () => {
@@ -158,7 +230,6 @@ class DisplayController {
     if (currentPlayer.type === "Human" 
     && this.game.isEmptySquare(move)) {
       currentPlayer.move(this.game, move);
-      target.textContent = currentPlayer.marker;
     }
 
     await new Promise(r => setTimeout(r, 1000));
@@ -167,13 +238,14 @@ class DisplayController {
     }
   }
 
-  handleAIMove = async () => {
+  handleAIMove = async (m) => {
     await new Promise(r => setTimeout(r, 1000));
     if (this.isGameOver()) {
       return;
     }
 
     let currentPlayer = this.game.getCurrentTurn();
+    /*
     let randomRow = this.randomIntGen(0,2);
     let randomCol = this.randomIntGen(0,2);
     let move = [randomRow, randomCol];
@@ -181,11 +253,10 @@ class DisplayController {
     while (!this.game.isEmptySquare(move)) {
       move = [this.randomIntGen(0,2), this.randomIntGen(0,2)];
     }
+    */
 
     // DOM target
-    let target = document.querySelector(`div[id="${move[0]}-${move[1]}"]`);
-    target.textContent = currentPlayer.marker;
-    currentPlayer.move(this.game, move);
+    currentPlayer.moveBest(this.game);
   }
 
   randomIntGen = (start, end) => {
@@ -198,7 +269,7 @@ class DisplayController {
 
     let formProps = Object.fromEntries(formData);
     let p1 = new Player(formProps.p1name, "x", formProps.type1);
-    let p2 = new Player(formProps.p2name, "o", formProps.type2);
+    let p2 = new AI(formProps.p2name, "o", formProps.type2);
 
     this.game = new Game(p1, p2);
 
